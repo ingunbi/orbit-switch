@@ -88,3 +88,44 @@ test('corrupt, primitive and blocked browser storage never prevent starting or s
   blocked.game.endFlight();
   assert.equal(blocked.game.state, 'ended');
 });
+
+test('sound and orbit buttons return keyboard control to the flight canvas', () => {
+  const runtime = boot();
+  const canvas = runtime.elements.get('game');
+  const sound = runtime.elements.get('sound-button');
+  const control = runtime.elements.get('switch-button');
+  runtime.game.start();
+  sound.focus();
+  sound.click();
+  assert.equal(runtime.document.activeElement, canvas);
+  runtime.key('Space');
+  assert.equal(runtime.game.lane, 1);
+  control.focus();
+  control.click();
+  assert.equal(runtime.document.activeElement, canvas);
+  assert.equal(runtime.game.lane, 0);
+  runtime.key('ArrowUp');
+  assert.equal(runtime.game.lane, 1);
+});
+
+test('pointer orbit control switches on press once, ignores secondary presses and respects pause', () => {
+  const runtime = boot();
+  const control = runtime.elements.get('switch-button');
+  runtime.game.start();
+  const press = (button = 0) => control.events.pointerdown({ button, preventDefault() {} });
+  press(2);
+  assert.equal(runtime.game.lane, 0);
+  press();
+  assert.equal(runtime.game.lane, 1);
+  control.events.click({ detail: 1 });
+  assert.equal(runtime.game.lane, 1);
+  runtime.game.pause();
+  press();
+  assert.equal(runtime.game.lane, 1);
+  runtime.game.resume();
+  press();
+  assert.equal(runtime.game.lane, 1);
+  runtime.step(1.1);
+  press();
+  assert.equal(runtime.game.lane, 0);
+});

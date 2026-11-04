@@ -449,8 +449,24 @@ $('pause-restart-button').addEventListener('click', start);
 $('resume-button').addEventListener('click', resume);
 $('home-button').addEventListener('click', home);
 $('pause-button').addEventListener('click', () => state === 'paused' ? resume() : pause());
-$('switch-button').addEventListener('click', switchOrbit);
-$('sound-button').addEventListener('click', () => { soundOn=!soundOn;audio.unlock();syncSound();save();if(soundOn)audio.note(660,.13); });
+$('switch-button').addEventListener('pointerdown', (event) => {
+  if (event.button !== 0) return;
+  event.preventDefault();
+  switchOrbit();
+  if (state === 'playing') canvas.focus({ preventScroll: true });
+});
+// Pointer presses switch immediately; keyboard and assistive clicks still work.
+$('switch-button').addEventListener('click', (event) => {
+  if (event.detail) return;
+  switchOrbit();
+  if (state === 'playing') canvas.focus({ preventScroll: true });
+});
+$('sound-button').addEventListener('click', () => {
+  soundOn = !soundOn;
+  audio.unlock(); syncSound(); save();
+  if (soundOn) audio.note(660, .13);
+  if (state === 'playing') canvas.focus({ preventScroll: true });
+});
 canvas.addEventListener('pointerdown',(event)=>{if(event.button!==0)return;event.preventDefault();if(state==='playing')switchOrbit();});
 window.addEventListener('keydown',(event)=>{
   if(event.repeat)return;

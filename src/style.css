@@ -5,4 +5,59 @@
 @media(max-width:800px){.mission-control{padding:0 16px}.masthead{height:80px}.mission-id{display:none}.game-layout{display:block}.flight-deck{height:calc(100svh - 140px);min-height:570px;max-height:820px}.flight-deck:after{border-radius:15px 15px 0 0}.briefing{border-left:0;border-top:1px solid #29463a;display:grid;grid-template-columns:1fr 1fr;gap:0 25px;padding:24px}.aside-top{grid-column:1/-1}.briefing h2{font-size:22px;margin:18px 0 10px}.briefing-description{grid-column:1;grid-row:3}.orbit-diagram{display:none}.manual-list{grid-column:2;grid-row:2/5;margin-top:20px;gap:15px}.signal-card{grid-column:1;margin-top:21px;padding:14px 0}.manual-footnote{grid-column:1/-1;font-size:8px;padding-top:18px}.page-footer{letter-spacing:.8px;font-size:7px;padding:20px 0}.wordmark{font-size:18px}.brand-mark{font-size:29px;margin-right:5px}.header-actions{gap:7px}.icon-button{width:34px;height:34px}.sound-slash{left:17px;top:6px}.telemetry{top:25px;left:23px;right:23px}.flight-stats{gap:20px}.score-block>strong{font-size:31px}.flight-stats strong{font-size:15px}.eyebrow{font-size:8px}.deck-footer{left:20px;right:20px;bottom:20px}.deck-footer>span{font-size:9px}.coordinate{font-size:7px;bottom:76px}.coord-left{left:21px}.coord-right{right:21px}.overlay{padding:90px 18px 75px}.modal-card{width:325px;padding:25px}.feedback{top:24%}}
 @media(max-width:380px){.mission-control{padding:0 10px}.masthead{height:70px}.wordmark{font-size:16px}.flight-deck{min-height:560px}.telemetry{left:18px;right:18px}.flight-stats{gap:13px}.score-block>strong{font-size:28px}.modal-card{padding:24px}.modal-card h1{font-size:29px}.switch-button kbd{display:none}.briefing{grid-template-columns:1fr;padding:23px}.manual-list{grid-column:1;grid-row:auto;margin-top:24px}.briefing-description{grid-row:auto}.signal-card{margin-top:24px}.manual-footnote{grid-column:1}.page-footer>span:first-child{max-width:145px;line-height:1.6}.deck-footer>span{font-size:8px}.deck-footer{left:17px;right:17px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
-@media(orientation:landscape) and (max-height:600px) and (min-width:600px){.mission-control{padding:0 20px}.masthead{height:61px}.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 220px}.flight-deck{height:calc(100svh - 105px);min-height:305px;max-height:none}.briefing{display:flex;padding:20px;max-height:calc(100svh - 105px);overflow-y:auto;border-top:0;border-left:1px solid #29463a}.briefing h2{font-size:19px;margin:14px 0 8px}.briefing-description,.orbit-diagram{display:none}.manual-list{margin-top:16px;gap:12px}.manual-list strong{font-size:9px}.manual-list p{font-size:8px}.signal-card{margin-top:16px;padding:12px 0}.signal-bars{height:20px;margin-top:8px}.signal-card p{font-size:8px;margin-top:8px}.manual-footnote{padding-top:12px;font-size:7px}.telemetry{top:15px;left:20px;right:20px}.score-block>strong{font-size:25px}.flight-stats strong{font-size:14px;margin-top:6px}.flight-stats{gap:16px}.deck-footer{bottom:12px;left:18px;right:18px}.switch-button{padding:7px 10px}.switch-button kbd{display:none}.coordinate{bottom:57px;font-size:6px}.coord-left{left:19px}.coord-right{right:19px}.overlay{padding:55px 18px 45px}.modal-card{width:295px;padding:17px 21px}.transmission{font-size:8px;margin-bottom:10px}.modal-card h1{font-size:24px;margin-bottom:10px}.modal-card p{font-size:9px;line-height:1.7;margin-bottom:10px}.instruction{padding:8px 0;margin-bottom:5px}.instruction strong{font-size:10px}.instruction small{font-size:8px}.tap-glyph{width:29px;height:29px}.primary-button{padding:11px 14px;font-size:11px}.microcopy{display:none}.compact h2{font-size:21px;margin:11px 0}.result-score{font-size:38px;margin:8px 0 10px}.result-grid{padding:10px 0;margin-bottom:10px}.result-grid strong{font-size:14px;margin-top:4px}.result-grid small{font-size:8px}.text-button{margin-top:8px;padding:3px}.page-footer{padding:15px 0}.feedback{top:22%;font-size:11px}}
+@media(orientation:landscape) and (max-height:600px){.mission-control{padding:0 20px}.masthead{height:52px}.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 220px}.flight-deck{height:calc(100svh - 72px);min-height:0;max-height:none}.briefing{display:flex;padding:20px;max-height:calc(100svh - 72px);overflow-y:auto;border-top:0;border-left:1px solid #29463a}.briefing h2{font-size:19px;margin:14px 0 8px}.briefing-description,.orbit-diagram{display:none}.manual-list{margin-top:16px;gap:12px}.manual-list strong{font-size:9px}.manual-list p{font-size:8px}.signal-card{margin-top:16px;padding:12px 0}.signal-bars{height:20px;margin-top:8px}.signal-card p{font-size:8px;margin-top:8px}.manual-footnote{padding-top:12px;font-size:7px}.telemetry{top:15px;left:20px;right:20px}.score-block>strong{font-size:25px}.flight-stats strong{font-size:14px;margin-top:6px}.flight-stats{gap:16px}.deck-footer{bottom:12px;left:18px;right:18px}.switch-button{padding:7px 10px}.switch-button kbd{display:none}.coordinate{bottom:57px;font-size:6px}.coord-left{left:19px}.coord-right{right:19px}.overlay{padding:55px 18px 45px}.modal-card{width:295px;padding:17px 21px}.transmission{font-size:8px;margin-bottom:10px}.modal-card h1{font-size:24px;margin-bottom:10px}.modal-card p{font-size:9px;line-height:1.7;margin-bottom:10px}.instruction{padding:8px 0;margin-bottom:5px}.instruction strong{font-size:10px}.instruction small{font-size:8px}.tap-glyph{width:29px;height:29px}.primary-button{padding:11px 14px;font-size:11px}.microcopy{display:none}.compact h2{font-size:21px;margin:11px 0}.result-score{font-size:38px;margin:8px 0 10px}.result-grid{padding:10px 0;margin-bottom:10px}.result-grid strong{font-size:14px;margin-top:4px}.result-grid small{font-size:8px}.text-button{margin-top:8px;padding:3px}.page-footer{padding:15px 0}.feedback{top:22%;font-size:11px}}
+
+
+/* Keep touch controls comfortable without extending the flight deck. */
+.switch-button{touch-action:manipulation}
+@media(max-width:800px), (orientation:landscape) and (max-height:600px){
+  .icon-button{width:44px;height:44px}
+  .sound-slash{left:22px;top:11px}
+  .switch-button{min-height:44px}
+}
+
+/* A short portrait viewport still contains the complete flight and its controls. */
+@media(max-width:800px) and (max-height:700px) and (orientation:portrait){
+  .flight-deck{height:calc(100svh - 100px);min-height:0}
+  .overlay{padding:70px 14px 54px}
+  .modal-card{width:300px;padding:18px 20px}
+  .transmission{font-size:8px;margin-bottom:12px}
+  .modal-card h1{font-size:25px;line-height:1.12;margin-bottom:12px}
+  .modal-card p{font-size:10px;line-height:1.6;margin-bottom:12px}
+  .instruction{padding:9px 0;margin-bottom:8px}
+  .tap-glyph{width:30px;height:30px}
+  .primary-button{min-height:44px;padding:11px 14px}
+  .microcopy{display:none}
+  .compact h2{font-size:21px;line-height:1.2;margin:8px 0}
+  #result-panel{padding:16px 20px}
+  .result-score{font-size:36px;line-height:1.1;margin:6px 0 10px}
+  .result-grid{padding:10px 0;margin-bottom:10px;gap:6px}
+  .result-grid small{font-size:8px}
+  .result-grid strong{font-size:14px;margin-top:4px}
+  .text-button{min-height:32px;margin-top:6px;padding:6px}
+}
+
+/* Wide cards use the available horizontal space on short landscape screens. */
+@media(orientation:landscape) and (max-height:600px){
+  .overlay{padding:38px 18px 28px}
+  .modal-card{width:470px;padding:15px 20px}
+  .primary-button{min-height:44px}
+  #pause-panel{width:320px}
+  #intro-panel,#result-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:22px}
+  #intro-panel .transmission{grid-column:1;grid-row:1}
+  #intro-panel h1{grid-column:1;grid-row:2}
+  #intro-panel p{grid-column:1;grid-row:3;margin-bottom:0}
+  #intro-panel .instruction{grid-column:2;grid-row:1/3;align-self:center;margin:0}
+  #intro-panel .primary-button{grid-column:2;grid-row:3;align-self:center}
+  #result-panel>.eyebrow{grid-column:1;grid-row:1}
+  #result-panel h2{grid-column:1;grid-row:2;font-size:20px;line-height:1.2;margin:6px 0 0}
+  #result-panel .result-score{grid-column:1;grid-row:3;font-size:38px;line-height:1.1;margin:6px 0 8px}
+  #result-panel .result-grid{grid-column:2;grid-row:1/4;align-self:center;margin:0;gap:6px}
+  #result-panel p{grid-column:1;grid-row:4/6;align-self:center;margin:0}
+  #restart-button{grid-column:2;grid-row:4}
+  #home-button{grid-column:2;grid-row:5;min-height:28px;margin-top:4px;padding:5px}
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:700px){
+  .game-layout{display:block}
+  .briefing{display:grid;grid-template-columns:1fr 1fr;max-height:none;overflow:visible;border-left:0;border-top:1px solid #29463a}
+}
