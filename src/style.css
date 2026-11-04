@@ -61,3 +61,70 @@
   .game-layout{display:block}
   .briefing{display:grid;grid-template-columns:1fr 1fr;max-height:none;overflow:visible;border-left:0;border-top:1px solid #29463a}
 }
+
+/* A quiet landmark for each new part of the flight. */
+.sector-beacon{position:absolute;left:34px;top:104px;z-index:2;display:flex;align-items:center;gap:11px;max-width:calc(100% - 68px);pointer-events:none}
+.sector-beacon-label{display:block;color:#729d88;font-family:Consolas,monospace;font-size:7px;letter-spacing:2.2px;line-height:1.4}
+.sector-beacon strong{display:block;color:#a9d2bc;font-size:11px;font-weight:400;letter-spacing:.2px;margin-top:3px;line-height:1.4}
+.sector-beacon-dot{position:relative;width:5px;height:5px;flex:none;border-radius:50%;background:var(--mint);box-shadow:0 0 10px #84e6c54d}
+.sector-beacon-dot:after{content:"";position:absolute;inset:-4px;border:1px solid #84e6c52b;border-radius:50%;animation:beacon-breathe 4s ease-in-out infinite}
+.telemetry .eyebrow{color:#8cae9d;letter-spacing:1.8px}
+.score-block>strong,.flight-stats strong,.result-score,.result-grid strong{font-variant-numeric:tabular-nums}
+.score-block>strong{text-shadow:0 0 28px #c6f47712}
+.signal-bars i{transition:background .2s,box-shadow .2s}
+.signal-bars i.active{box-shadow:0 0 10px #c6f4771f}
+
+/* Event feedback stays above the field rather than covering the ship. */
+.feedback{max-width:calc(100% - 40px);text-align:center;font-weight:500;line-height:1.35;text-shadow:0 0 20px #c6f47726;white-space:normal}
+.feedback[data-tone="score"]{font-size:13px;letter-spacing:1px}
+.feedback[data-tone="ready"]{color:var(--mint);font-size:11px;letter-spacing:3px}
+.feedback[data-tone="sector"]{color:#b5e2cf;font-size:12px;letter-spacing:2.4px}
+.feedback[data-tone="sector"]:before{content:"NEW COORDINATES";display:block;color:#83ab98;font-size:7px;letter-spacing:3px;margin-bottom:6px}
+.feedback[data-tone="combo"]{color:var(--lime);font-size:26px;letter-spacing:3px;text-shadow:0 0 25px #c6f47755}
+.feedback[data-tone="combo"]:before{content:"ENERGY CHAIN";display:block;color:var(--mint);font-size:8px;letter-spacing:3.2px;margin-bottom:4px}
+.feedback[data-tone="combo"]:after{content:"";display:block;width:24px;height:1px;margin:7px auto 0;background:#c6f47780}
+.feedback.show{animation:signal-pop .38s cubic-bezier(.2,.7,.2,1) both}
+
+/* Short entrances and tactile controls, with no extra layers of blur. */
+.modal-card:not([hidden]){animation:card-arrive .42s cubic-bezier(.2,.7,.2,1) both}
+.modal-card:before{box-shadow:0 0 14px #c6f47740}
+.primary-button{transition:background .18s,box-shadow .18s,transform .18s}
+.primary-button:hover{box-shadow:0 4px 20px #c6f47718}
+.primary-button:active{transform:translateY(0);box-shadow:0 1px 8px #c6f47718}
+.primary-button>span{transition:transform .18s}
+.primary-button:hover>span{transform:translate(2px,-1px)}
+.icon-button{transition:border-color .18s,background .18s,box-shadow .18s}
+.icon-button[aria-pressed="true"]{color:var(--mint);border-color:#84e6c55c;background:#19372a;box-shadow:0 0 18px #84e6c50a}
+.microcopy{color:#90b6a1}
+
+@keyframes card-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes signal-pop{from{opacity:0;transform:translate(-50%,6px) scale(.96)}65%{opacity:1;transform:translate(-50%,-1px) scale(1.01)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes beacon-breathe{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.9;transform:scale(1.08)}}
+
+@media(max-width:1100px){.sector-beacon{left:25px}}
+@media(max-width:800px){
+  .sector-beacon{left:23px;top:90px;gap:9px}
+  .sector-beacon strong{font-size:10px}
+  .feedback{top:29%}
+  .feedback[data-tone="combo"]{font-size:22px;letter-spacing:2px}
+}
+@media(max-width:380px){
+  .sector-beacon{left:18px;top:84px}
+  .sector-beacon-label{font-size:6px;letter-spacing:1.8px}
+  .sector-beacon strong{font-size:9px}
+  .feedback[data-tone="combo"]{font-size:20px}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .sector-beacon{left:20px;top:65px;gap:8px}
+  .sector-beacon-label{font-size:6px;letter-spacing:1.7px}
+  .sector-beacon strong{font-size:9px;margin-top:2px}
+  .feedback{top:23%}
+  .feedback[data-tone="combo"]{font-size:19px}
+  .feedback[data-tone="sector"]{font-size:10px}
+  .feedback[data-tone="sector"]:before,.feedback[data-tone="combo"]:before{font-size:6px;margin-bottom:3px}
+}
+@media(prefers-reduced-motion:reduce){
+  .modal-card:not([hidden]),.feedback.show,.sector-beacon-dot:after{animation:none}
+  .feedback,.feedback.show{transform:translate(-50%,0)}
+  .primary-button:hover,.primary-button:active,.primary-button:hover>span{transform:none}
+}

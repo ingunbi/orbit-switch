@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { difficultyAt, INNER_RADIUS, intersectsOrbit, multiplierFor } from './logic.js';
+import { Sound } from './audio.js';
+import { SpaceVisuals, themeAt } from './visuals.js';
 
-function boot(savedValue = null, blocked = false) {
+function boot(savedValue = null, blocked = false, reducedMotion = true) {
   const handlers = {};
   const elements = new Map();
   const document = { hidden: false, addEventListener: (event, handler) => { handlers[`document:${event}`] = handler; } };
@@ -25,15 +27,18 @@ function boot(savedValue = null, blocked = false) {
     return elements.get(id);
   };
   document.getElementById('signal-bars').children = Array.from({ length: 12 }, () => new Element('bar'));
-  const window = { matchMedia: () => ({ matches: true }), devicePixelRatio: 1, addEventListener: (event, handler) => { handlers[`window:${event}`] = handler; } };
+  const window = { matchMedia: () => ({ matches: reducedMotion }), devicePixelRatio: 1, addEventListener: (event, handler) => { handlers[`window:${event}`] = handler; } };
+  let seed = 314159;
+  const gameMath = Object.create(Math);
+  gameMath.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
   let callback;
   let time = 0;
-  const context = vm.createContext({ document, window, HTMLElement: Element, difficultyAt, INNER_RADIUS, intersectsOrbit, multiplierFor, Math,
+  const context = vm.createContext({ document, window, HTMLElement: Element, difficultyAt, INNER_RADIUS, intersectsOrbit, multiplierFor, Sound, SpaceVisuals, themeAt, Math: gameMath,
     localStorage: { getItem: () => { if (blocked) throw new Error('blocked'); return savedValue; }, setItem: () => { if (blocked) throw new Error('blocked'); } },
     performance: { now: () => time }, ResizeObserver: class { constructor(fn) { this.fn = fn; } observe() { this.fn(); } },
     requestAnimationFrame: (fn) => { callback = fn; }
   });
-  const source = readFileSync(new URL('./main.js', import.meta.url), 'utf8').replace(/^import .*;\n/, '').replace('import.meta.env.DEV', 'true');
+  const source = readFileSync(new URL('./main.js', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('import.meta.env.DEV', 'true');
   vm.runInContext(source, context);
   return { game: window.__game, elements, document,
     step(seconds) { for (let i = 0; i < Math.ceil(seconds * 60); i++) { time += 1000 / 60; callback(time); } },
@@ -128,4 +133,28 @@ test('pointer orbit control switches on press once, ignores secondary presses an
   runtime.step(1.1);
   press();
   assert.equal(runtime.game.lane, 0);
+});
+
+test('visual motion settings keep the same rewards and fair flight through sector changes', () => {
+  const results = [];
+  for (const reducedMotion of [true, false]) {
+    const runtime = boot(null, false, reducedMotion);
+    runtime.game.start();
+    for (let frame = 0; frame < 65 * 60; frame++) {
+      const rock = runtime.game.entities.filter((entity) => entity.type === 'rock' && entity.gap > -0.1).sort((a, b) => a.gap - b.gap)[0];
+      if (rock && rock.gap < 0.6 && runtime.game.lane === rock.lane) runtime.game.switchOrbit();
+      runtime.step(1 / 60);
+      assert.equal(runtime.game.state, 'playing');
+    }
+    assert.ok(runtime.game.energy > 25);
+    assert.equal(runtime.elements.get('sector-name').textContent, '황금빛 잔광');
+    results.push({ score: runtime.game.score, energy: runtime.game.energy, elapsed: runtime.game.elapsed, lane: runtime.game.lane });
+    runtime.game.pause();
+    const stoppedAt = runtime.game.elapsed;
+    runtime.step(1);
+    assert.equal(runtime.game.elapsed, stoppedAt);
+    runtime.game.start();
+    assert.equal(runtime.elements.get('sector-name').textContent, '케플러의 새벽');
+  }
+  assert.deepEqual(results[0], results[1]);
 });

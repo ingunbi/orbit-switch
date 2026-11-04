@@ -26,6 +26,7 @@
             <div class="score-block"><span class="eyebrow">MISSION SCORE</span><strong id="score">00000</strong></div>
             <div class="flight-stats"><div><span class="eyebrow">ENERGY</span><strong><i class="energy-icon">✦</i> <span id="energy">00</span></strong></div><div><span class="eyebrow">BEST</span><strong id="best">00000</strong></div></div>
           </div>
+          <div class="sector-beacon" aria-hidden="true"><span class="sector-beacon-dot"></span><div><span class="sector-beacon-label">SECTOR <span id="sector-label">01</span></span><strong id="sector-name">케플러의 새벽</strong></div></div>
           <canvas id="game" tabindex="0" aria-label="Orbit Switch 게임 화면. 스페이스바, 방향키 위아래, 또는 화면 탭으로 궤도를 바꿉니다."></canvas>
           <div class="coordinate coord-left" aria-hidden="true">SECTOR <span id="sector">01</span><br>KEPLER STATION</div>
           <div class="coordinate coord-right" aria-hidden="true">ALT. <span id="altitude">LOW</span><br><span id="velocity">1.00</span> RAD/S</div>
@@ -38,7 +39,7 @@
               <p>작은 탐사선의 끝없는 항해.<br>궤도를 바꿔 파편을 피하고 에너지를 모으세요.</p>
               <div class="instruction"><span class="tap-glyph" aria-hidden="true">↕</span><div><strong>탭 한 번, 궤도 전환</strong><small>화면 탭 · SPACE · ↑ ↓</small></div></div>
               <button id="start-button" class="primary-button">탐사 시작 <span>↗</span></button>
-              <span class="microcopy">실패해도 괜찮아요. 다음 항해가 있으니까.</span>
+              <span class="microcopy">♪ 사운드를 켜면 더 깊어지는 항해 · M</span>
             </section>
             <section id="pause-panel" class="modal-card compact" hidden>
               <span class="eyebrow">SIGNAL ON HOLD</span>
@@ -68,7 +69,7 @@
           <div class="orbit-diagram" aria-hidden="true"><div class="diagram-orbit outer"></div><div class="diagram-orbit inner"></div><div class="diagram-planet"></div><span class="diagram-ship">◆</span><span class="diagram-path">↕</span></div>
           <ol class="manual-list"><li><span class="legend-dot mint"></span><div><strong>안쪽 ↔ 바깥쪽</strong><p>탭하거나 스페이스바로 이동</p></div></li><li><span class="legend-dot coral"></span><div><strong>붉은 파편을 피하세요</strong><p>충돌하면 이번 항해는 종료</p></div></li><li><span class="legend-star">✦</span><div><strong>빛나는 에너지를 모으세요</strong><p>연속 수집하면 최대 4배 보너스</p></div></li></ol>
           <div class="signal-card"><div><span class="eyebrow">CURRENT SIGNAL</span><span id="multiplier">×1</span></div><div class="signal-bars" id="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p id="chain-description">에너지 3개마다 배수가 올라가요</p></div>
-          <div class="manual-footnote">P / ESC 일시정지 <span>·</span> M 사운드<br>브라우저에 최고 기록이 저장됩니다.</div>
+          <div class="manual-footnote">P / ESC 일시정지 <span>·</span> M 배경음·효과음<br>브라우저에 최고 기록이 저장됩니다.</div>
         </aside>
       </section>
       <footer class="page-footer"><span>SMALL GAMES, BIG LITTLE MOMENTS.</span><span>ORBIT SWITCH <i>✦</i> 2026</span></footer>

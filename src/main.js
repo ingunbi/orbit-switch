@@ -1,4 +1,6 @@
 import { difficultyAt, INNER_RADIUS, intersectsOrbit, multiplierFor } from './logic.js';
+import { Sound } from './audio.js';
+import { SpaceVisuals, themeAt } from './visuals.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('game');
@@ -24,39 +26,8 @@ function save() {
   try { localStorage.setItem(saveKey, JSON.stringify({ best, sound: soundOn })); } catch { /* A blocked save must never interrupt a flight. */ }
 }
 
-class Sound {
-  constructor() { this.context = null; }
-  unlock() {
-    if (!soundOn) return;
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
-      this.context ??= new AudioContext();
-      this.context.resume().catch(() => {});
-    } catch { /* The game also works without audio support. */ }
-  }
-  note(frequency, duration = 0.1, delay = 0, type = 'sine', volume = 0.05) {
-    if (!soundOn || !this.context || this.context.state !== 'running') return;
-    const at = this.context.currentTime + delay;
-    const oscillator = this.context.createOscillator();
-    const gain = this.context.createGain();
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(frequency, at);
-    gain.gain.setValueAtTime(0.001, at);
-    gain.gain.exponentialRampToValueAtTime(volume, at + 0.012);
-    gain.gain.exponentialRampToValueAtTime(0.001, at + duration);
-    oscillator.connect(gain).connect(this.context.destination);
-    oscillator.start(at);
-    oscillator.stop(at + duration + 0.01);
-  }
-  switch() { this.note(260, 0.07, 0, 'triangle', 0.035); this.note(390, 0.09, 0.025, 'sine', 0.025); }
-  collect(chain) { const base = [523.25, 587.33, 659.25, 783.99, 880][chain % 5]; this.note(base, 0.15); this.note(base * 1.5, 0.14, 0.05, 'sine', 0.025); }
-  start() { [261.63, 329.63, 392, 523.25].forEach((f, i) => this.note(f, 0.2, i * 0.065, 'sine', 0.035)); }
-  crash() { this.note(130, 0.32, 0, 'triangle', 0.08); this.note(65, 0.4, 0.08, 'sine', 0.06); }
-}
-
-const audio = new Sound();
-const stars = Array.from({ length: 100 }, () => ({ x: Math.random(), y: Math.random(), size: Math.random() * 1.15 + 0.3, alpha: Math.random() * 0.45 + 0.15, phase: Math.random() * TAU }));
+const audio = new Sound(() => soundOn);
+const visuals = new SpaceVisuals(ctx, { reducedMotion });
 let width = 0, height = 0, cx = 0, cy = 0, unit = 0;
 let state = 'intro';
 let elapsed = 0, ambientTime = 0, score = 0, energy = 0, chain = 0, maxChain = 0;
@@ -83,6 +54,7 @@ function resize() {
   cx = width / 2;
   cy = height * 0.52;
   unit = Math.min(width * 0.365, height * 0.325, 270);
+  visuals.resize(width, height, cx, cy, unit);
 }
 new ResizeObserver(resize).observe(canvas);
 
@@ -111,6 +83,8 @@ function updateHud() {
   $('energy').textContent = pad(energy, 2);
   $('best').textContent = pad(best);
   $('sector').textContent = pad(difficultyAt(elapsed).sector, 2);
+  $('sector-label').textContent = pad(difficultyAt(elapsed).sector, 2);
+  $('sector-name').textContent = themeAt(elapsed).name;
   $('altitude').textContent = lane === 0 ? 'LOW' : 'HIGH';
   $('velocity').textContent = difficultyAt(elapsed).speed.toFixed(2);
   $('multiplier').textContent = `×${multiplierFor(chain)}`;
@@ -118,8 +92,9 @@ function updateHud() {
   [...$('signal-bars').children].forEach((bar, index) => bar.classList.toggle('active', index < chain));
 }
 
-function feedback(text) {
+function feedback(text, tone = 'score') {
   $('feedback').textContent = text;
+  $('feedback').setAttribute('data-tone', tone);
   $('feedback').classList.add('show');
   feedbackTime = 1.3;
 }
@@ -129,6 +104,8 @@ function resetFlight() {
   playerAngle = -Math.PI / 2; playerRadius = INNER_RADIUS; lane = 0;
   shipVisible = true; spawnCountdown = 0.65; waveNumber = 0;
   entities = []; particles = []; trail = [];
+  visuals.reset();
+  audio.setPlaying(false);
   flash = 0; lastSector = 1; feedbackTime = 0;
   resumePending = false;
   $('feedback').classList.remove('show');
@@ -141,6 +118,7 @@ function start() {
   state = 'playing';
   showPanel(null);
   syncControls();
+  audio.setPlaying(true);
   audio.start();
   announce('탐사 시작. 탭 또는 스페이스바로 궤도를 바꾸세요.');
   canvas.focus({ preventScroll: true });
@@ -157,8 +135,9 @@ function home() {
 function switchOrbit() {
   if (state !== 'playing' || resumePending) return;
   lane = 1 - lane;
+  visuals.switchOrbit(playerAngle, playerRadius, lane === 0 ? INNER_RADIUS : 1);
   audio.unlock();
-  audio.switch();
+  audio.switch(lane);
   burst(cx + Math.cos(playerAngle) * playerRadius * unit, cy + Math.sin(playerAngle) * playerRadius * unit, colors.mint, 5, 15);
   $('altitude').textContent = lane === 0 ? 'LOW' : 'HIGH';
 }
@@ -166,6 +145,7 @@ function switchOrbit() {
 function pause() {
   if (state !== 'playing') return;
   state = 'paused';
+  audio.setPlaying(false);
   resumePending = false;
   showPanel('paused');
   syncControls();
@@ -180,7 +160,7 @@ function resume() {
   resumePending = true;
   countdownRemaining = 1.05;
   showPanel(null);
-  feedback('READY');
+  feedback('READY', 'ready');
   feedbackTime = 1.05;
   syncControls();
   canvas.focus({ preventScroll: true });
@@ -189,12 +169,14 @@ function resume() {
 function endFlight() {
   if (state !== 'playing') return;
   state = 'ended';
+  audio.setPlaying(false);
   shipVisible = false;
   const finalScore = Math.floor(score);
   const newBest = finalScore > best;
   best = Math.max(best, finalScore);
   save();
-  flash = 0.7;
+  flash = 0.32;
+  visuals.crash(playerAngle, playerRadius);
   burst(cx + Math.cos(playerAngle) * playerRadius * unit, cy + Math.sin(playerAngle) * playerRadius * unit, colors.coral, 34, 95);
   audio.crash();
   $('result-label').textContent = newBest ? 'PERSONAL BEST / NEW RECORD' : 'TRANSMISSION ENDED';
@@ -224,15 +206,19 @@ function spawnWave() {
 }
 
 function burst(x, y, color, count = 14, speed = 50) {
+  if (reducedMotion) { count = Math.min(count, 4); speed = 0; }
   for (let i = 0; i < count; i++) {
-    const angle = Math.random() * TAU;
-    const velocity = (0.3 + Math.random() * 0.7) * speed;
-    particles.push({ x, y, vx: Math.cos(angle) * velocity, vy: Math.sin(angle) * velocity, age: 0, life: 0.35 + Math.random() * 0.35, color, size: Math.random() * 2 + 1 });
+    const angle = visuals.random() * TAU;
+    const velocity = (0.3 + visuals.random() * 0.7) * speed;
+    particles.push({ x, y, vx: Math.cos(angle) * velocity, vy: Math.sin(angle) * velocity, age: 0, life: 0.35 + visuals.random() * 0.35, color, size: visuals.random() * 2 + 1 });
   }
+  if (particles.length > 150) particles.splice(0, particles.length - 150);
 }
 
 function update(dt) {
-  ambientTime += dt;
+  if (state === 'paused') return;
+  if (!resumePending) ambientTime += dt;
+  visuals.update(dt, !resumePending);
   flash = Math.max(0, flash - dt * 1.8);
   if (feedbackTime > 0) {
     feedbackTime -= dt;
@@ -254,15 +240,19 @@ function update(dt) {
   if (state !== 'playing') return;
   if (resumePending) {
     countdownRemaining -= dt;
-    if (countdownRemaining <= 0) { resumePending = false; syncControls(); announce('항해를 계속합니다.'); }
+    if (countdownRemaining <= 0) { resumePending = false; audio.setPlaying(true); syncControls(); announce('항해를 계속합니다.'); }
     return;
   }
   elapsed += dt;
   const difficulty = difficultyAt(elapsed);
+  visuals.setSector(elapsed);
+  audio.tick(elapsed, multiplierFor(chain));
   if (difficulty.sector > lastSector) {
     lastSector = difficulty.sector;
-    feedback(`SECTOR ${pad(lastSector, 2)}`);
-    audio.note(523, 0.2); audio.note(784, 0.25, 0.09);
+    feedback(`SECTOR ${pad(lastSector, 2)}`, 'sector');
+    visuals.sector(lastSector);
+    audio.sector(lastSector);
+    announce(`${themeAt(elapsed).name}. 섹터 ${lastSector}.`);
   }
   score += dt * 10;
   playerAngle = (playerAngle + dt * difficulty.speed) % TAU;
@@ -274,7 +264,7 @@ function update(dt) {
   }
   for (const entity of entities) {
     entity.gap -= (difficulty.speed + 0.48) * dt;
-    entity.rotation = (entity.rotation || 0) + dt * 0.45;
+    entity.rotation = (entity.rotation || 0) + (reducedMotion ? 0 : dt * 0.45);
     if (entity.gone) continue;
     if (intersectsOrbit(playerRadius, entity.gap, entity.lane, entity.size)) {
       if (entity.type === 'rock') {
@@ -290,8 +280,13 @@ function update(dt) {
       const radius = entity.lane === 0 ? INNER_RADIUS : 1;
       const angle = playerAngle + entity.gap;
       burst(cx + Math.cos(angle) * radius * unit, cy + Math.sin(angle) * radius * unit, colors.lime);
-      feedback(chain % 3 === 0 && chain <= 9 ? `SIGNAL ×${multiplierFor(chain)}` : `+${bonus}`);
-      audio.collect(chain);
+      const milestone = chain % 3 === 0 && chain <= 9;
+      visuals.collect(angle, radius, bonus, multiplierFor(chain), milestone);
+      if (milestone) {
+        feedback(`SIGNAL ×${multiplierFor(chain)}`, 'combo');
+        announce(`연속 ${chain}개. 수집 보너스 ${multiplierFor(chain)}배.`);
+      }
+      audio.collect(chain, entity.lane);
     }
     if (entity.type === 'energy' && entity.gap < -0.19 && !entity.gone) {
       entity.gone = true;
@@ -319,21 +314,7 @@ function circle(x, y, radius, fill, stroke = null, lineWidth = 1) {
 }
 
 function renderBackground() {
-  ctx.fillStyle = '#081b17'; ctx.fillRect(0, 0, width, height);
-  const atmosphere = ctx.createRadialGradient(cx, cy, unit * 0.05, cx, cy, unit * 1.75);
-  atmosphere.addColorStop(0, '#244a3233'); atmosphere.addColorStop(0.5, '#163a2c55'); atmosphere.addColorStop(1, '#07181300');
-  ctx.fillStyle = atmosphere; ctx.fillRect(0, 0, width, height);
-  for (const star of stars) {
-    const twinkle = reducedMotion ? 1 : 0.75 + 0.25 * Math.sin(ambientTime * 0.6 + star.phase);
-    circle(star.x * width, star.y * height, star.size, `rgba(156,205,177,${star.alpha * twinkle})`);
-  }
-  ctx.strokeStyle = '#81b4940b'; ctx.lineWidth = 1;
-  const spacing = 45;
-  for (let x = cx % spacing; x < width; x += spacing) {
-    for (let y = cy % spacing; y < height; y += spacing) {
-      ctx.beginPath();ctx.moveTo(x - 2, y);ctx.lineTo(x + 2, y);ctx.moveTo(x,y - 2);ctx.lineTo(x,y + 2);ctx.stroke();
-    }
-  }
+  visuals.drawBackground();
 }
 
 function renderOrbits() {
@@ -366,6 +347,7 @@ function renderOrbits() {
 }
 
 function renderPlanet() {
+  const theme = themeAt(elapsed);
   const r = unit * 0.39;
   const halo = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 1.6);
   halo.addColorStop(0, '#a0dc622b');halo.addColorStop(1, '#7ac58b00');
@@ -374,7 +356,7 @@ function renderPlanet() {
   circle(cx, cy, r, null, '#9fce8460', 1.5);
   ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.clip();
   const gradient = ctx.createRadialGradient(cx-r*.45,cy-r*.5,r*.1,cx+r*.3,cy+r*.35,r*1.4);
-  gradient.addColorStop(0,'#618d58');gradient.addColorStop(.4,'#395c3a');gradient.addColorStop(1,'#152e23');
+  gradient.addColorStop(0,theme.planetLight);gradient.addColorStop(.4,theme.planetMid);gradient.addColorStop(1,theme.planetDark);
   ctx.fillStyle=gradient;ctx.fillRect(cx-r,cy-r,r*2,r*2);
   ctx.translate(cx,cy);ctx.rotate(-.35);
   ctx.strokeStyle='#a5d17b18';ctx.lineWidth=r*.11;
@@ -399,7 +381,7 @@ function renderRock(x, y, size, rotation, seed) {
 }
 
 function renderEnergy(x,y,size,phase){
-  const pulse=1+Math.sin(ambientTime*4+phase)*.09;
+  const pulse=reducedMotion?1:1+Math.sin(ambientTime*4+phase)*.09;
   ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.shadowColor=colors.lime;ctx.shadowBlur=15;
   ctx.fillStyle=colors.lime;ctx.fillRect(-size*.5*pulse,-size*.5*pulse,size*pulse,size*pulse);
   ctx.shadowBlur=0;ctx.strokeStyle='#c6f47744';ctx.lineWidth=1;ctx.strokeRect(-size,-size,size*2,size*2);ctx.restore();
@@ -407,7 +389,7 @@ function renderEnergy(x,y,size,phase){
 
 function renderEntities() {
   let shown = entities;
-  if(state === 'intro') shown=[{type:'rock',lane:0,gap:1.55,size:.063,seed:2,rotation:ambientTime*.1},{type:'rock',lane:1,gap:3.7,size:.063,seed:4,rotation:-ambientTime*.13},{type:'energy',lane:1,gap:2.5,size:.042,seed:1},{type:'energy',lane:0,gap:5.4,size:.042,seed:3}];
+  if(state === 'intro') shown=[{type:'rock',lane:0,gap:1.55,size:.063,seed:2,rotation:reducedMotion?0:ambientTime*.1},{type:'rock',lane:1,gap:3.7,size:.063,seed:4,rotation:reducedMotion?0:-ambientTime*.13},{type:'energy',lane:1,gap:2.5,size:.042,seed:1},{type:'energy',lane:0,gap:5.4,size:.042,seed:3}];
   for(const entity of shown){
     if(entity.gone)continue;
     const radius=(entity.lane===0?INNER_RADIUS:1)*unit;
@@ -420,20 +402,27 @@ function renderEntities() {
 
 function renderShip(){
   if(!shipVisible)return;
-  for(const point of trail){const alpha=(1-point.age/.45)*.34;circle(cx+Math.cos(point.angle)*point.radius*unit,cy+Math.sin(point.angle)*point.radius*unit,2.2,`rgba(132,230,197,${alpha})`);}
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  for(let i=1;i<trail.length;i++){
+    const previous=trail[i-1],point=trail[i],alpha=(1-point.age/.45)*.5;
+    ctx.strokeStyle=`rgba(132,230,197,${alpha})`;ctx.lineWidth=2.2;
+    ctx.beginPath();ctx.moveTo(cx+Math.cos(previous.angle)*previous.radius*unit,cy+Math.sin(previous.angle)*previous.radius*unit);ctx.lineTo(cx+Math.cos(point.angle)*point.radius*unit,cy+Math.sin(point.angle)*point.radius*unit);ctx.stroke();
+  }
+  ctx.restore();
   const x=cx+Math.cos(playerAngle)*playerRadius*unit,y=cy+Math.sin(playerAngle)*playerRadius*unit;
   const size=Math.max(8,unit*.052);
   ctx.save();ctx.translate(x,y);ctx.rotate(playerAngle+Math.PI/2);
   ctx.shadowBlur=16;ctx.shadowColor='#baf48299';
   ctx.fillStyle=colors.lime;ctx.beginPath();ctx.moveTo(size,0);ctx.lineTo(-size*.75,-size*.62);ctx.lineTo(-size*.4,0);ctx.lineTo(-size*.75,size*.62);ctx.closePath();ctx.fill();
   ctx.shadowBlur=0;ctx.fillStyle='#ecffe1';ctx.beginPath();ctx.moveTo(size*.65,0);ctx.lineTo(-size*.42,-size*.28);ctx.lineTo(-size*.2,0);ctx.closePath();ctx.fill();
-  ctx.fillStyle=colors.mint;ctx.globalAlpha=.65;ctx.beginPath();ctx.moveTo(-size*.5,-size*.2);ctx.lineTo(-size*(1.2+Math.sin(ambientTime*28)*.15),0);ctx.lineTo(-size*.5,size*.2);ctx.fill();ctx.restore();
+  ctx.fillStyle=colors.mint;ctx.globalAlpha=.65;ctx.beginPath();ctx.moveTo(-size*.5,-size*.2);ctx.lineTo(-size*(1.2+(reducedMotion?0:Math.sin(ambientTime*28)*.15)),0);ctx.lineTo(-size*.5,size*.2);ctx.fill();ctx.restore();
 }
 
 function render(){
   if(width===0||height===0)return;
-  renderBackground();renderOrbits();renderPlanet();renderEntities();renderShip();
+  renderBackground();renderOrbits();visuals.drawAccents();renderPlanet();renderEntities();renderShip();
   for(const p of particles){ctx.globalAlpha=1-p.age/p.life;circle(p.x,p.y,p.size,p.color);}ctx.globalAlpha=1;
+  visuals.drawForeground();
   if(flash>0&&!reducedMotion){ctx.fillStyle=`rgba(242,154,128,${flash*.25})`;ctx.fillRect(0,0,width,height);}
 }
 
