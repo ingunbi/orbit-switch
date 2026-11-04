@@ -12,6 +12,7 @@ export class Sound {
     this.playing = false;
     this.nextBeat = null;
     this.beat = 0;
+    this.lastSurgeAt = -Infinity;
     this.voices = new Set();
   }
 
@@ -118,6 +119,9 @@ export class Sound {
     const pan = lane === 0 ? -0.25 : 0.25;
     this.tone(base, 0.22, 0, 'sine', 0.045, pan);
     this.tone(base * 1.5, 0.2, 0.045, 'sine', 0.018, -pan);
+    // A brief body and glassy attack add impact without a louder sustained note.
+    this.tone(155, 0.085, 0, 'sine', 0.012, pan * 0.5, false, 95);
+    this.tone(base * 4, 0.055, 0.008, 'triangle', 0.006, -pan, false, base * 2);
     if (chain % 3 === 0 && chain <= 9) {
       this.tone(base * 2, 0.32, 0.09, 'sine', 0.025);
       this.tone(base * 2.5, 0.26, 0.15, 'sine', 0.012);
@@ -126,12 +130,43 @@ export class Sound {
 
   start() {
     this.beat = 0;
+    this.lastSurgeAt = -Infinity;
+    this.tone(115, 0.42, 0, 'sine', 0.014, 0, false, 520);
+    this.tone(980, 0.23, 0.14, 'triangle', 0.004, 0, false, 1450);
     [261.63, 329.63, 392, 523.25].forEach((frequency, index) => this.note(frequency, 0.3, index * 0.07, 'sine', 0.032));
   }
 
   crash() {
     this.tone(180, 0.42, 0, 'triangle', 0.065, 0, false, 42);
     this.tone(85, 0.56, 0.05, 'sine', 0.055, 0, false, 30);
+    this.tone(2400, 0.055, 0, 'triangle', 0.008, -0.15, false, 700);
+    this.tone(1500, 0.045, 0.025, 'triangle', 0.005, 0.15, false, 450);
+  }
+
+  perfect() {
+    this.tone(660, 0.16, 0, 'sine', 0.028, -0.2, false, 1100);
+    this.tone(1320, 0.13, 0.045, 'sine', 0.012, 0.2);
+  }
+
+  shieldBreak() {
+    this.tone(240, 0.2, 0, 'triangle', 0.032, 0, false, 90);
+    this.tone(980, 0.12, 0.025, 'sine', 0.014, 0, false, 520);
+  }
+
+  shieldReady() {
+    this.tone(392, 0.22, 0, 'sine', 0.02, -0.2);
+    this.tone(784, 0.26, 0.07, 'sine', 0.016, 0.2);
+  }
+
+  surge() {
+    if (!this.playing || !this.enabled() || !this.context || this.context.state !== 'running') return;
+    const now = this.context.currentTime;
+    if (now - this.lastSurgeAt < 0.7) return;
+    this.lastSurgeAt = now;
+    // Follow the collection transient instead of stacking another loud attack.
+    [523.25, 659.25, 783.99].forEach((frequency, index) => {
+      this.tone(frequency, 0.36 - index * 0.04, 0.1 + index * 0.035, 'sine', [0.016, 0.012, 0.009][index], (index - 1) * 0.3);
+    });
   }
 
   sector(sector) {
@@ -151,6 +186,10 @@ export class Sound {
     const pitch = root * 2 ** (melody[this.beat % melody.length] / 12);
     this.tone(pitch, 0.36, 0, 'sine', 0.018, Math.sin(this.beat * 0.7) * 0.35, true);
     if (this.beat % 4 === 0) this.tone(root / 2, 0.6, 0, 'sine', 0.028, 0, true);
+    if (multiplier >= 4 && this.beat % 2 === 0) {
+      const accent = this.beat % 4 === 0;
+      this.tone(pitch * (accent ? 2 : 1.5), 0.48, 0.035, accent ? 'triangle' : 'sine', accent ? 0.008 : 0.011, accent ? -0.3 : 0.3, true);
+    }
     this.beat += 1;
   }
 }

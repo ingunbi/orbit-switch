@@ -24,9 +24,9 @@
         <div class="flight-deck">
           <div class="telemetry">
             <div class="score-block"><span class="eyebrow">MISSION SCORE</span><strong id="score">00000</strong></div>
-            <div class="flight-stats"><div><span class="eyebrow">ENERGY</span><strong><i class="energy-icon">✦</i> <span id="energy">00</span></strong></div><div><span class="eyebrow">BEST</span><strong id="best">00000</strong></div></div>
+            <div class="flight-stats"><div><span class="eyebrow">ENERGY</span><strong id="energy-readout" class="energy-readout"><i class="energy-icon">✦</i> <span id="energy">00</span></strong></div><div><span class="eyebrow">BEST</span><strong id="best">00000</strong></div></div>
           </div>
-          <div class="sector-beacon" aria-hidden="true"><span class="sector-beacon-dot"></span><div><span class="sector-beacon-label">SECTOR <span id="sector-label">01</span></span><strong id="sector-name">케플러의 새벽</strong></div></div>
+          <div class="sector-beacon" aria-hidden="true"><span class="sector-beacon-dot"></span><div><span class="sector-beacon-label">SECTOR <span id="sector-label">01</span></span><strong id="sector-name">케플러의 새벽</strong></div><span id="combo-beacon" class="combo-beacon" data-charged="false">×1</span><span id="shield-indicator" class="shield-indicator" data-ready="true">실드 ON</span><span id="pattern-indicator" class="pattern-indicator">단일 접근</span></div>
           <canvas id="game" tabindex="0" aria-label="Orbit Switch 게임 화면. 스페이스바, 방향키 위아래, 또는 화면 탭으로 궤도를 바꿉니다."></canvas>
           <div class="coordinate coord-left" aria-hidden="true">SECTOR <span id="sector">01</span><br>KEPLER STATION</div>
           <div class="coordinate coord-right" aria-hidden="true">ALT. <span id="altitude">LOW</span><br><span id="velocity">1.00</span> RAD/S</div>
@@ -36,7 +36,7 @@
             <section id="intro-panel" class="modal-card">
               <div class="transmission"><span class="live-dot"></span> 수신된 임무</div>
               <h1>TWO ORBITS.<br><em>ONE WAY HOME.</em></h1>
-              <p>작은 탐사선의 끝없는 항해.<br>궤도를 바꿔 파편을 피하고 에너지를 모으세요.</p>
+              <p>별빛을 가르는 작은 항해.<br>보호막으로 한 번 더, 타이밍으로 더 높이.</p>
               <div class="instruction"><span class="tap-glyph" aria-hidden="true">↕</span><div><strong>탭 한 번, 궤도 전환</strong><small>화면 탭 · SPACE · ↑ ↓</small></div></div>
               <button id="start-button" class="primary-button">탐사 시작 <span>↗</span></button>
               <span class="microcopy">♪ 사운드를 켜면 더 깊어지는 항해 · M</span>
@@ -52,7 +52,7 @@
               <span class="eyebrow" id="result-label">TRANSMISSION ENDED</span>
               <h2 id="result-title">항해 기록 도착.</h2>
               <div class="result-score" id="result-score">00000</div>
-              <div class="result-grid"><div><small>모은 에너지</small><strong id="result-energy">0</strong></div><div><small>항해 시간</small><strong id="result-time">0초</strong></div><div><small>최고 연속</small><strong id="result-chain">0</strong></div></div>
+              <div class="result-grid"><div><small>모은 에너지</small><strong id="result-energy">0</strong></div><div><small>항해 시간</small><strong id="result-time">0초</strong></div><div><small>최고 연속</small><strong id="result-chain">0</strong></div><div><small>퍼펙트 회피</small><strong id="result-perfect">0</strong></div></div>
               <p id="result-message">다음 궤도에서 다시 만나요.</p>
               <button id="restart-button" class="primary-button">다시 출발 <span>↗</span></button>
               <button id="home-button" class="text-button">임무 화면으로</button>
@@ -67,8 +67,8 @@
           <h2>작은 전환이<br>항해를 바꾼다.</h2>
           <p class="briefing-description">멀리 가는 데 필요한 건<br>정확한 타이밍, 딱 하나.</p>
           <div class="orbit-diagram" aria-hidden="true"><div class="diagram-orbit outer"></div><div class="diagram-orbit inner"></div><div class="diagram-planet"></div><span class="diagram-ship">◆</span><span class="diagram-path">↕</span></div>
-          <ol class="manual-list"><li><span class="legend-dot mint"></span><div><strong>안쪽 ↔ 바깥쪽</strong><p>탭하거나 스페이스바로 이동</p></div></li><li><span class="legend-dot coral"></span><div><strong>붉은 파편을 피하세요</strong><p>충돌하면 이번 항해는 종료</p></div></li><li><span class="legend-star">✦</span><div><strong>빛나는 에너지를 모으세요</strong><p>연속 수집하면 최대 4배 보너스</p></div></li></ol>
-          <div class="signal-card"><div><span class="eyebrow">CURRENT SIGNAL</span><span id="multiplier">×1</span></div><div class="signal-bars" id="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p id="chain-description">에너지 3개마다 배수가 올라가요</p></div>
+          <ol class="manual-list"><li><span class="legend-dot mint"></span><div><strong>안쪽 ↔ 바깥쪽</strong><p>탭하거나 스페이스바로 이동</p></div></li><li><span class="legend-dot coral"></span><div><strong>붉은 파편을 피하세요</strong><p>보호막 소모 · 없으면 항해 종료</p></div></li><li><span class="legend-star">✦</span><div><strong>빛나는 에너지를 모으세요</strong><p>8개로 보호막 재충전 · 연속 최대 4배</p></div></li></ol>
+          <div class="signal-card"><div><span class="eyebrow">CURRENT SIGNAL</span><span id="multiplier">×1</span></div><div class="signal-bars" id="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p id="chain-description">에너지 3개마다 배수가 올라가요</p><p class="timing-note">파편 직전 전환에 성공하면 PERFECT +20</p></div>
           <div class="manual-footnote">P / ESC 일시정지 <span>·</span> M 배경음·효과음<br>브라우저에 최고 기록이 저장됩니다.</div>
         </aside>
       </section>
