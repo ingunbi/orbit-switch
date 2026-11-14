@@ -48,3 +48,9 @@ npm run build
 `wrangler.jsonc`는 Cloudflare Workers 정적 자산 배포용입니다. Wrangler는 개발 의존성으로 포함되어 `npm run dev:cloudflare`(빌드 후 Workers 런타임 로컬 실행), `npm run check:cloudflare`(배포 설정 dry-run, 로그인 불필요), `npm run deploy:cloudflare`(배포, `wrangler login` 필요)를 사용합니다. 이 프로젝트 자체에는 계정 정보나 비밀 키가 포함되지 않습니다.
 
 충돌 판정·전환 입력·난이도·배수 상한 외에 교차 패턴 간격, 퍼펙트 판정·보상, 보호막 소모·재충전·일시정지, 섹터 변화, 효과 상한·모션 감소, 성운 텍스처·캐시·미지원 환경, 오디오 정리를 Node.js 기본 테스트 러너로 검증합니다. 같은 시드에서 모션 설정에 관계없이 점수·수집 결과가 같은지 확인하고, 여러 시드의 후반 패턴을 최대 프레임 간격으로 진행해 보호막에 의존하지 않는 회피 경로도 확인합니다.
+
+## 오픈소스 · 기여
+
+[MIT 라이선스](LICENSE)로 공개합니다. 버그 제보와 개선 제안, Pull Request를 환영합니다.
+개발·검사 방법과 변경 범위는 [CONTRIBUTING.md](CONTRIBUTING.md)를 확인하세요.
+개발 의존성에는 각 패키지의 라이선스가 별도로 적용됩니다.
